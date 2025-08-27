@@ -87,10 +87,14 @@ def main():
         if coll_dir == out_cal_dir:
             continue
         for ics_file in coll_dir.iterdir():
-            event_id = coll_dir.name + "_" + ics_file.stem
+            event_id = ics_file.stem
+            # If this assertion trips, either futz the IDs to be
+            # unique on the calendar side, or prefix generated event
+            # IDs with the calendar ID (but then need to rewrite the
+            # files instead of just hardlinking them).
             assert event_id not in unique_event_ids, event_id
             unique_event_ids.add(event_id)
-            ics_file.hardlink_to(out_cal_dir / (event_id + ".ics"))
+            (out_cal_dir / (event_id + ".ics")).hardlink_to(ics_file)
     log("Running vdirsyncer upload")
     run_vd("discover", "upload")
     run_vd("sync", "upload")
