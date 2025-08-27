@@ -1,0 +1,18 @@
+[project]
+name = "calmerge"
+version = "0.1.0"
+description = "Merges CalDAV calendars together"
+authors = [
+    {name = "Radian LLC",email = "contact+calmerge@radian.codes"}
+]
+readme = "README.md"
+requires-python = ">=3.10,<4"
+dependencies = [
+    "python-dotenv (>=1.1.1,<2.0.0)",
+    "vdirsyncer (>=0.19.3,<0.20.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
