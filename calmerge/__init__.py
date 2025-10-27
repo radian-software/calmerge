@@ -85,10 +85,6 @@ def main():
     for coll in cfg.INPUT_CALENDARS:
         for ics_file in (cal_dir / coll.id).iterdir():
             event_id = coll.id + "_" + ics_file.stem
-            # If this assertion trips, either futz the IDs to be
-            # unique on the calendar side, or prefix generated event
-            # IDs with the calendar ID (but then need to rewrite the
-            # files instead of just hardlinking them).
             with open(ics_file) as f1:
                 with open(out_cal_dir / (event_id + ".ics"), "w") as f2:
                     for line in f1:
