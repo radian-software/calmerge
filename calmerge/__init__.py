@@ -35,6 +35,12 @@ def main():
                 "general": {
                     "status_path": str(vd_status_file),
                 },
+                "storage local_ro": {
+                    "type": "filesystem",
+                    "path": str(cal_dir),
+                    "fileext": ".ics",
+                    "read_only": True,
+                },
                 "storage local": {
                     "type": "filesystem",
                     "path": str(cal_dir),
@@ -60,7 +66,7 @@ def main():
                     "conflict_resolution": "a wins",
                 },
                 "pair upload": {
-                    "a": "local",
+                    "a": "local_ro",
                     "b": "caldav",
                     "collections": [cfg.OUTPUT_CALENDAR.id],
                     "conflict_resolution": "a wins",
