@@ -82,11 +82,9 @@ def main():
     except FileNotFoundError:
         pass
     out_cal_dir.mkdir()
-    for coll_dir in cal_dir.iterdir():
-        if coll_dir == out_cal_dir:
-            continue
-        for ics_file in coll_dir.iterdir():
-            event_id = coll_dir.name + "_" + ics_file.stem
+    for coll in cfg.INPUT_CALENDARS:
+        for ics_file in (cal_dir / coll.id).iterdir():
+            event_id = coll.id + "_" + ics_file.stem
             # If this assertion trips, either futz the IDs to be
             # unique on the calendar side, or prefix generated event
             # IDs with the calendar ID (but then need to rewrite the
