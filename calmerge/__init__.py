@@ -62,7 +62,7 @@ pair upload {{
   collection {cfg.OUTPUT_CALENDAR.id}
   conflict_resolution keep a
 }}
-        """)
+        """.strip() + "\n")
     cal_dir.mkdir(exist_ok=True)
     run_vd = lambda *args: subprocess.run(
         ["pimsync", "-c", str(vd_cfg_file), *args], check=True
