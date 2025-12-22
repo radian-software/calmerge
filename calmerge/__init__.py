@@ -12,75 +12,62 @@ def log(msg):
     print(f"[calmerge] {msg}")
 
 
-def format_vd_cfg(o: dict) -> dict:
-    def recurse(o: Any) -> dict | str:
-        if isinstance(o, dict):
-            return {k: recurse(v) for k, v in o.items()}
-        return json.dumps(o)
-
-    return {k: recurse(v) for k, v in o.items()}
-
-
 def main():
     log("Doing initial setup")
     cfg.DATA_DIR.mkdir(parents=True, exist_ok=True)
-    cal_dir = cfg.DATA_DIR / "vdirsyncer-caldav"
+    cal_dir = cfg.DATA_DIR / "pimsync-caldav"
     out_cal_dir = cal_dir / cfg.OUTPUT_CALENDAR.id
-    vd_cfg_file = cfg.DATA_DIR / "vdirsyncer-config"
-    vd_status_file = cfg.DATA_DIR / "vdirsyncer-status"
-    vd_cfg = configparser.ConfigParser()
-    vd_cfg.update(
-        format_vd_cfg(
-            {
-                "general": {
-                    "status_path": str(vd_status_file),
-                },
-                "storage local_ro": {
-                    "type": "filesystem",
-                    "path": str(cal_dir),
-                    "fileext": ".ics",
-                    "read_only": True,
-                },
-                "storage local": {
-                    "type": "filesystem",
-                    "path": str(cal_dir),
-                    "fileext": ".ics",
-                },
-                "storage caldav_ro": {
-                    "type": "caldav",
-                    "url": cfg.CALDAV.url,
-                    "username": cfg.CALDAV.username,
-                    "password": cfg.CALDAV.password,
-                    "read_only": True,
-                },
-                "storage caldav": {
-                    "type": "caldav",
-                    "url": cfg.CALDAV.url,
-                    "username": cfg.CALDAV.username,
-                    "password": cfg.CALDAV.password,
-                },
-                "pair download": {
-                    "a": "caldav_ro",
-                    "b": "local",
-                    "collections": [c.id for c in cfg.INPUT_CALENDARS],
-                    "conflict_resolution": "a wins",
-                },
-                "pair upload": {
-                    "a": "local_ro",
-                    "b": "caldav",
-                    "collections": [cfg.OUTPUT_CALENDAR.id],
-                    "conflict_resolution": "a wins",
-                },
-            }
-        )
-    )
+    vd_cfg_file = cfg.DATA_DIR / "pimsync-config"
+    vd_status_file = cfg.DATA_DIR / "pimsync-status"
     with open(vd_cfg_file, "w") as f:
-        vd_cfg.write(f)
+        f.write(f"""
+status_path {vd_status_file}
+
+storage local_ro {{
+  type vdir/icalendar
+  path {cal_dir}
+  read_only
+}}
+
+storage local {{
+  type vdir/icalendar
+  path {cal_dir}
+}}
+
+storage caldav_ro {{
+  type caldav
+  url {cfg.CALDAV.url}
+  username {cfg.CALDAV.username}
+  password {cfg.CALDAV.password}
+  read_only
+}}
+
+storage caldav {{
+  type caldav
+  url {cfg.CALDAV.url}
+  username {cfg.CALDAV.username}
+  password {cfg.CALDAV.password}
+}}
+
+pair download {{
+  storage_a caldav_ro
+  storage_b local
+  {"\n  ".join(f"collection {c.id}" for c in cfg.INPUT_CALENDARS)}
+  conflict_resolution keep a
+}}
+
+pair upload {{
+  storage_a local_ro
+  storage_b caldav
+  collection {cfg.OUTPUT_CALENDAR.id}
+  conflict_resolution keep a
+}}
+        """)
+    cal_dir.mkdir(exist_ok=True)
     run_vd = lambda *args: subprocess.run(
-        ["vdirsyncer", f"--config={str(vd_cfg_file)}", *args], check=True
+        ["pimsync", "-c", str(vd_cfg_file), *args], check=True
     )
-    log("Running vdirsyncer download")
-    run_vd("discover", "download")
+    log("Running pimsync download")
     run_vd("sync", "download")
     log("Merging calendar collections")
     try:
@@ -98,6 +85,5 @@ def main():
                             f2.write("UID:" + event_id + "\n")
                         else:
                             f2.write(line)
-    log("Running vdirsyncer upload")
-    run_vd("discover", "upload")
+    log("Running pimsync upload")
     run_vd("sync", "upload")
