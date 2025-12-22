@@ -1,9 +1,11 @@
 # Calendar Merge
 
 Take a set of CalDAV calendars and merge all their events into a
-single CalDAV calendar. Uses vdirsyncer. Run it as a cron job.
+single CalDAV calendar. Uses pimsync. Run it as a cron job.
 
 ## Usage
+
+Install [pimsync](https://pimsync.whynothugo.nl/install.html).
 
 Clone the repo and create `.env` file in it:
 
