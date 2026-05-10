@@ -1,3 +1,4 @@
+import argparse
 import configparser
 import json
 import re
@@ -22,6 +23,9 @@ def format_vd_cfg(o: dict) -> dict:
 
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-d", "--debug", action="store_true")
+    cm_args = parser.parse_args()
     log("Doing initial setup")
     cfg.DATA_DIR.mkdir(parents=True, exist_ok=True)
     cal_dir = cfg.DATA_DIR / "vdirsyncer-caldav"
@@ -77,7 +81,7 @@ def main():
     with open(vd_cfg_file, "w") as f:
         vd_cfg.write(f)
     run_vd = lambda *args: subprocess.run(
-        ["vdirsyncer", f"--config={str(vd_cfg_file)}", *args], check=True
+        ["vdirsyncer", *(["-vdebug"] if cm_args.debug else []), f"--config={str(vd_cfg_file)}", *args], check=True
     )
     log("Running vdirsyncer download")
     run_vd("discover", "download")
@@ -90,7 +94,7 @@ def main():
     out_cal_dir.mkdir()
     for coll in cfg.INPUT_CALENDARS:
         for ics_file in (cal_dir / coll.id).iterdir():
-            event_id = coll.id + "_" + ics_file.stem
+            event_id = cfg.OUTPUT_CALENDAR.id + "_" + coll.id + "_" + ics_file.stem
             with open(ics_file) as f1:
                 with open(out_cal_dir / (event_id + ".ics"), "w") as f2:
                     for line in f1:
