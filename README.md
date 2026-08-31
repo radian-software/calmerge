@@ -33,3 +33,23 @@ poetry run python -m calmerge
 ```
 
 on a cron job with the desired frequency.
+
+### Multiple sync jobs
+
+You might want to create multiple merged calendars from separate sets
+of input calendars. In that case, you can use the multiple profiles
+feature. Restructure your `.env` file like this:
+
+```
+PROFILES=abc,xyz
+
+INPUT_CALENDARS_ABC=
+OUTPUT_CALENDAR_ABC=
+
+INPUT_CALENDARS_XYZ=
+OUTPUT_CALENDAR_XYZ=
+```
+
+Where each comma-delimited profile name is converted to uppercase and
+suffixed on the end of the other environment variables. Each job is
+executed in turn, in the order specified.
